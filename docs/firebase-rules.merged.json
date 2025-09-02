@@ -1,0 +1,68 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "questions": {
+      ".read": true,
+      ".write": false
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
+    "rooms": {
+      "$room": {
+        ".read": "root.child('rooms').child($room).child('players').child(auth.uid).exists()",
+        ".write": "root.child('rooms').child($room).child('players').child(auth.uid).exists() || (!data.exists() && newData.child('players').child(auth.uid).exists())",
+        "players": {
+          "$uid": { ".write": "$uid === auth.uid" }
+        },
+        "answers": {
+          "$uid": { ".write": "$uid === auth.uid" }
+        },
+        "results": { ".write": false }
+      }
+    },
+
+    "presence": {
+      "$room": {
+        ".read": "root.child('rooms').child($room).child('players').child(auth.uid).exists()",
+        "$uid": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid"
+        }
+      }
+    },
+
+    "reports": {
+      "$questionId": {
+        "$reportId": {
+          ".read": false,
+          ".write": "auth != null"
+        }
+      }
+    },
+
+    "queue": {
+      "classic": {
+        ".read": false,
+        "waiting": { ".read": "auth != null", ".write": "auth != null" },
+        "creating": {
+          ".read": false,
+          ".write": "auth != null && (!data.exists() || data.val() === auth.uid)"
+        },
+        "matched": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && !data.exists()"
+          }
+        }
+      }
+    }
+  }
+}

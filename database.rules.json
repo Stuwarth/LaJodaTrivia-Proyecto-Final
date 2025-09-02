@@ -1,0 +1,68 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "questions": {
+      ".read": true,
+      ".write": false
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+
+    "rooms": {
+      "$room": {
+  ".read": "root.child('rooms').child($room).child('players').child(auth.uid).exists() || root.child('queue').child('classic').child('matched').child(auth.uid).child('code').val() === $room",
+        ".write": "root.child('rooms').child($room).child('players').child(auth.uid).exists() || (!data.exists() && newData.child('players').child(auth.uid).exists())",
+        "players": {
+          "$uid": { ".write": "$uid === auth.uid && root.child('rooms').child($room).exists()" }
+        },
+        "answers": {
+          "$uid": { ".write": "$uid === auth.uid" }
+        },
+        "results": { ".write": false }
+      }
+    },
+
+    "presence": {
+      "$room": {
+        ".read": "root.child('rooms').child($room).child('players').child(auth.uid).exists() || root.child('queue').child('classic').child('matched').child(auth.uid).child('code').val() === $room",
+        "$uid": {
+          ".read": "$uid === auth.uid",
+          ".write": "$uid === auth.uid && root.child('rooms').child($room).exists()"
+        }
+      }
+    },
+
+    "reports": {
+      "$questionId": {
+        "$reportId": {
+          ".read": false,
+          ".write": "auth != null"
+        }
+      }
+    },
+
+    "queue": {
+      "classic": {
+        ".read": false,
+        "waiting": { ".read": "auth != null", ".write": "auth != null" },
+        "creating": {
+          ".read": false,
+          ".write": "auth != null && (!data.exists() || data.val() === auth.uid)"
+        },
+        "matched": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && (!data.exists() || newData.child('a').val() === auth.uid || newData.child('b').val() === auth.uid)"
+          }
+        }
+      }
+    }
+  }
+}
